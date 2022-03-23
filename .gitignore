@@ -1,0 +1,8 @@
+data/
+out/
+
+.idea/
+.bsp/
+.metals/
+.scala/
+.scala-build/
