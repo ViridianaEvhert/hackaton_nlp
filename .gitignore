@@ -1,0 +1,10 @@
+data/
+out/
+
+.ignore
+
+.idea/
+.bsp/
+.metals/
+.scala/
+.scala-build/
