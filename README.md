@@ -8,7 +8,7 @@ Estos son los pasos a seguir:
 
 1. Asegurarte de tener instalada una version *reciente* de python (i.e., 3.6, 3.8)
 2. Clonar el repo
-    - `git clone git@github.com:hope0hermes/nlp_hackathon.git`
+    - `git clone git@github.com:ViridianaEvhert/hackaton_nlp.git`
 3. Abrir terminal dentro del directorio repo recien clonado
 4. Crear ambiente virtual:
     - `python3.6 -m venv venv`
@@ -22,15 +22,15 @@ Estos son los pasos a seguir:
 7. Si depues de este paso necesitas instalar alguna libreria adicional, agregala
    a `requirements.txt` y repite el paso anterior
 
-Para bajar las transcipciones de las manianeras del portal de la [presidencia][2]
-ejecuta `nlp_hackathon/src/py3_collect_data.py`
+Para bajar las transcripciones de las manianeras del portal de la [presidencia][2]
+ejecuta `hackathon_nlp/src/py3_collect_data.py`
 
 Si desear utilizar el script para la recoleccion de resumenes de youtube
 (nlp_hackathon/src/py3_query_youtube_info.py), es necesario crear una
 `google account`, loggearse y settear los permisos necesarios como se describe
 [aqui][1]. La API key debe ser pasada como el argumento `key` al inicializar
 objetos de la clase `ParseChannelVideos` en
-`nlp_hackathon/src/py3_query_youtube_info.py`
+`hackathon_nlp/src/py3_query_youtube_info.py`
 
 
 [1]: https://medium.com/mcd-unison/youtube-data-api-v3-in-python-tutorial-with-examples-e829a25d2ebd
