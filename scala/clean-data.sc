@@ -18,10 +18,16 @@ import scala.xml.*
 import lib.log.{log, ChannelLogger, Logger, LogLevel}
 import lib.xml.Xml
 
+def cleanText(txt: String): String =
+  txt.replace("&nbsp;", " ")
+     .replace("&amp;", "&")
+     .replace("&lt;", "<")
+     .replace("&gt;", ">")
+     .replace(" ;", " ")
 
 def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] =
-  val accept = Set("stub", "p", "em")
-  val drop = Set("url", "h1", "h2", "id", "strong")
+  val accept = Set("stub", "p", "em", "s", "u")
+  val drop = Set("url", "h1", "h2", "id", "strong", "a", "br")
   xml.hyloF {
     case l@Xml.Leaf(Text(_)) =>
       IO.pure(l)
@@ -33,7 +39,7 @@ def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] 
       log.warning(s"unknown ${other.mapC([B] => (_: LazyList[B]).toList)}")
       *> IO.pure(Xml.Node.empty)
   } {
-    case Xml.Leaf(Text(txt))    => IO.pure(LazyList(txt))
+    case Xml.Leaf(Text(txt))    => IO.pure(LazyList(cleanText(txt)))
     case Xml.Node.Empty()       => IO.pure(LazyList.empty)
     case Xml.Node.Group(child)  => IO.pure(child.flatten)
     case other                  => IO.raiseError(new MatchError(other))
@@ -44,7 +50,10 @@ def clean(using Logger[IO]): Pipe[IO, String, String] =
 
   _.evalMapFilter{
      case "" => IO.pure(None)
-     case s  => Xml.parse(escape(s), LazyList).liftTo[IO].map(Some(_))
+     case s  => Xml.parse(escape(s), LazyList)
+                   .leftMap(err => Exception(s"${err.getMessage}\nXML: $s", err))
+                   .map(Some(_))
+                   .liftTo[IO]
    }
    .evalMap(cleanAndFlatten(_))
    .map{ _.filter(_.nonEmpty).mkString("").trim }
@@ -58,6 +67,18 @@ def recFiles(dir: Path, suffix: String)(using fs: Files[IO]): Stream[IO, Path] =
       ifFalse = Stream.fromOption{ Option.when(path.toString endsWith suffix)(path) }
     )
   }
+
+def escapeXml: Pipe[IO, String, String] = _.map(_.replace("&", "&amp;"))
+
+def mergeNonXmlNewline: Pipe[IO, String, String] =
+  def notXml = !(_: String).trim.startsWith("<")
+
+  _.zipWithNext
+   .scan(Vector.empty[String], Option.empty[String]) {
+     case ((acc, _),      (str, Some(next))) if notXml(next) => (acc :+ str) -> None
+     case ((Vector(), _), (str, _))                          => Vector()     -> Some(str)
+     case ((acc, _),      (str, _))                          => Vector()     -> Some((acc :+ str).mkString)
+   }.map(_._2).unNone
 
 def mainIO(inputDir0: String, suffix: String, outputDir0: String, logFile: String, maxPar: Int)(using fs: Files[IO]): IO[Unit] =
   ChannelLogger[IO].use { case log0 @ (given Logger[IO]) =>
@@ -74,6 +95,8 @@ def mainIO(inputDir0: String, suffix: String, outputDir0: String, logFile: Strin
       yield fs.readAll(in)
               .through(text.utf8.decode)
               .through(text.lines)
+              .through(escapeXml)
+              .through(mergeNonXmlNewline)
               .through(clean)
               .intersperse("\n")
               .through(text.utf8.encode)
