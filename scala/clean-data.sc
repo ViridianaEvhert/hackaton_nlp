@@ -20,11 +20,18 @@ import lib.xml.Xml
 
 
 def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] =
+  val accept = Set("p", "em")
+  val drop = Set("url", "h1", "h2")
   xml.hyloF {
-    case l@Xml.Leaf(Text(_))          => IO.pure(l)
-    case Xml.Node.Elem("p", _, child) => IO.pure(Xml.Node(None, child))
-    case other                        => log.warning(s"unknown ${other.mapC([B] => (_: LazyList[B]).toList)}")
-                                      *> IO.pure(Xml.Node.empty)
+    case l@Xml.Leaf(Text(_)) =>
+      IO.pure(l)
+    case Xml.Node.Elem(t, _, child) if accept contains t =>
+      IO.pure(Xml.Node(None, child))
+    case Xml.Node.Elem(t, _, child) if drop contains t =>
+      IO.pure(Xml.Node.empty)
+    case other =>
+      log.warning(s"unknown ${other.mapC([B] => (_: LazyList[B]).toList)}")
+      *> IO.pure(Xml.Node.empty)
   } {
     case Xml.Leaf(Text(txt))    => IO.pure(LazyList(txt))
     case Xml.Node.Empty()       => IO.pure(LazyList.empty)

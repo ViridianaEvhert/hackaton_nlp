@@ -6,7 +6,9 @@ _Scripts for data pre-processing_
 #### `clean-data`
 
 Cleans input xml data:
-  - Extracts text from `<p>` tags.
+  - Extracts text from tags `<p>` and `<em>`.
+  - Drops tags `<url>`, `<h1>`, `<h2>`.
+  - Warns if encounters other tag.
 
 Clean logic is defined by function `cleanAndFlatten`.
 
