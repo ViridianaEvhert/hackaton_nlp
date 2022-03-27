@@ -20,8 +20,8 @@ import lib.xml.Xml
 
 
 def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] =
-  val accept = Set("p", "em")
-  val drop = Set("url", "h1", "h2")
+  val accept = Set("stub", "p", "em")
+  val drop = Set("url", "h1", "h2", "id")
   xml.hyloF {
     case l@Xml.Leaf(Text(_)) =>
       IO.pure(l)
@@ -40,13 +40,16 @@ def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] 
   }
 
 def clean(using Logger[IO]): Pipe[IO, String, String] =
+  def escape(raw: String): String = s"<stub>$raw</stub>"
+
   _.evalMapFilter{
      case "" => IO.pure(None)
-     case s  => Xml.parse(s, LazyList).liftTo[IO].map(Some(_))
+     case s  => Xml.parse(escape(s), LazyList).liftTo[IO].map(Some(_))
    }
    .evalMap(cleanAndFlatten(_))
    .map{ _.filter(_.nonEmpty).mkString("").trim }
    .filter(_.nonEmpty)
+end clean
 
 def recFiles(dir: Path, suffix: String)(using fs: Files[IO]): Stream[IO, Path] =
   fs.list(dir).flatMap { path =>
