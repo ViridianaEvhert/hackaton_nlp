@@ -21,7 +21,7 @@ import lib.xml.Xml
 
 def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] =
   val accept = Set("stub", "p", "em")
-  val drop = Set("url", "h1", "h2", "id")
+  val drop = Set("url", "h1", "h2", "id", "strong")
   xml.hyloF {
     case l@Xml.Leaf(Text(_)) =>
       IO.pure(l)
