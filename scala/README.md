@@ -3,7 +3,7 @@
 _Scripts for data pre-processing_
 
 ---
-### `clean-data`
+#### `clean-data`
 
 Cleans input xml data:
   - Extracts text from `<p>` tags.
@@ -24,18 +24,18 @@ Clean logic is defined by function `cleanAndFlatten`.
   - `maxPar = 4` - process files in parallel
 
 ---
-### `find-keywords`
+#### `find-keywords`
 
 _WIP_
 
 ---
 
-## scala-cli
+## Scala CLI
 
 The scripts require only [scala-cli](https://scala-cli.virtuslab.org/install) to be installed.
 The CLI manages JVMs, Scala versions and the libraries. 
 
-The command below are assumed to be run from current directory (`/scala`).
+The commands below are assumed to be run from current directory.
 
 ### Compile
 Just compile:
@@ -64,7 +64,7 @@ Then you just run it
 
 Examples:
 - ```shell
-  scala-cli package . -M cleanData -o clean-data
+  scala-cli package . -M CleanData -o clean-data
   ```
   ```shell
   ./clean-data <data_dir> <file_suffix> <output_dir>
