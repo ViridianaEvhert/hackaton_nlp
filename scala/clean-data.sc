@@ -80,14 +80,14 @@ def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String,
     val logOut = Path(logFile)
     val logFormat = (e: ChannelLogger.Entry) =>
                     val lvl = e.level
-                    val ctx = e.context.getOrElse("file", "?")
+                    val ctx = e.context.getOrElse("file", "")
                     val msg = e.message
-                    val err = e.error.fold("")(
-                                _.getStackTrace
-                                 .map(t => s"  $t")
-                                 .mkString("", "\n", "\n")
-                              )
-                    s"[$lvl] $ctx\n$msg\n$err"
+                    // val err = e.error.fold("")(
+                    //             _.getStackTrace
+                    //              .map(t => s"  $t")
+                    //              .mkString("", "\n", "\n")
+                    //           )
+                    s"[$lvl] $ctx\n$msg\n"
     val logS = log0.stream.broadcastThrough(
                  // Write to file
                  _.filter(e => e.level == LogLevel.Error || e.level == LogLevel.Warning)
