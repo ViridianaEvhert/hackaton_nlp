@@ -59,15 +59,18 @@ def recFiles(dir: Path, suffix: String)(using fs: Files[IO]): Stream[IO, Path] =
     )
   }
 
-def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String, maxPar: Int)(using fs: Files[IO]): IO[Unit] =
+def mainIO(inputDir0: String, suffix: String, outputDir0: String, logFile: String, maxPar: Int)(using fs: Files[IO]): IO[Unit] =
   ChannelLogger[IO].use { case log0 @ (given Logger[IO]) =>
+    val inputDir = Path(inputDir0)
+    val outputDir = Path(outputDir0)
     val dataS =
       for
-        in <- recFiles(Path(inputDir), suffix)
-        _  <- Stream.eval{ log.info(s"cleaning $in") }
-        out = in.names.tail.foldLeft(Path(outputDir))(_ / _)
+        in <- recFiles(inputDir, suffix)
+        rel = inputDir.relativize(in)
+        out = outputDir.resolve(rel)
+        _  <- Stream.eval{ log.info(s"cleaning $rel") }
         _  <- Stream.eval{ out.parent.traverse_(fs.createDirectories) }
-        given Logger[IO] = log.withContext(Map("file" -> in.fileName.toString))
+        given Logger[IO] = log.withContext(Map("file" -> rel.toString))
       yield fs.readAll(in)
               .through(text.utf8.decode)
               .through(text.lines)
