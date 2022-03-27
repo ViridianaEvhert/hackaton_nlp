@@ -98,7 +98,7 @@ def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String,
   }
   
 @main
-def main(inputDir: String, suffix: String, outputDir: String): Unit =
+def CleanData(inputDir: String, suffix: String, outputDir: String): Unit =
   import cats.effect.unsafe.implicits.global
   // TODO
   val logFile = "clean-data.log"
