@@ -66,6 +66,7 @@ def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String,
               .through(text.utf8.encode)
               .through(fs.writeAll(out))
               .onError{ case err => Stream.eval{ log.error(err.getMessage, Some(err)) } }
+              .attempt
     val logOut = Path(logFile)
     val logFormat = (e: ChannelLogger.Entry) =>
                     val lvl = e.level
@@ -91,7 +92,7 @@ def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String,
     for
     // Run
       _ <- logS.compile.drain.start
-      _ <- dataS.parJoin(maxPar).compile.drain.attempt
+      _ <- dataS.parJoin(maxPar).compile.drain
       _ <- log0.closeAndWait
     yield ()
   }
