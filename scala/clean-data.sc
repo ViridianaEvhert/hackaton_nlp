@@ -8,6 +8,7 @@ import cats.syntax.applicativeError.*
 import cats.syntax.apply.*
 import cats.syntax.either.*
 import cats.syntax.flatMap.*
+import cats.syntax.foldable.*
 import cats.syntax.traverse.*
 import fs2.{INothing, Pipe, Stream, text}
 import fs2.io.file.{Files, Path}
@@ -40,13 +41,22 @@ def clean(using Logger[IO]): Pipe[IO, String, String] =
    .map{ _.filter(_.nonEmpty).mkString("").trim }
    .filter(_.nonEmpty)
 
-def mainIO(inputDir: String, ext: String, outputDir: String, logFile: String, maxPar: Int)(using fs: Files[IO]): IO[Unit] =
+def recFiles(dir: Path, suffix: String)(using fs: Files[IO]): Stream[IO, Path] =
+  fs.list(dir).flatMap { path =>
+    Stream.eval(fs.isDirectory(path)).ifM(
+      ifTrue  = recFiles(path, suffix),
+      ifFalse = Stream.fromOption{ Option.when(path.toString endsWith suffix)(path) }
+    )
+  }
+
+def mainIO(inputDir: String, suffix: String, outputDir: String, logFile: String, maxPar: Int)(using fs: Files[IO]): IO[Unit] =
   ChannelLogger[IO].use { case log0 @ (given Logger[IO]) =>
     val dataS =
       for
-        in <- fs.list(Path(inputDir)).filter(_.extName == ext)
+        in <- recFiles(Path(inputDir), suffix)
         _  <- Stream.eval{ log.info(s"cleaning $in") }
-        out = Path(outputDir) / in.fileName
+        out = in.names.tail.foldLeft(Path(outputDir))(_ / _)
+        _  <- Stream.eval{ out.parent.traverse_(fs.createDirectories) }
         given Logger[IO] = log.withContext(Map("file" -> in.fileName.toString))
       yield fs.readAll(in)
               .through(text.utf8.decode)
