@@ -22,7 +22,7 @@ def cleanText(txt: String): String =
      .replace("&amp;", "&")
      .replace("&lt;", "<")
      .replace("&gt;", ">")
-     .replace(" ;", " ")
+     .replace(" ", " ")
 
 def cleanAndFlatten(xml: Xml[LazyList])(using Logger[IO]): IO[LazyList[String]] =
   val accept = Set("stub", "p", "em", "s", "u")
