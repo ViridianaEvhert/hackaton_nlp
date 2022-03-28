@@ -7,7 +7,6 @@ import cats.instances.lazyList.*
 import cats.syntax.applicativeError.*
 import cats.syntax.apply.*
 import cats.syntax.either.*
-import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.traverse.*
 import fs2.{INothing, Pipe, Stream, text}
@@ -60,14 +59,6 @@ def clean(using Logger[IO]): Pipe[IO, String, String] =
    .filter(_.nonEmpty)
 end clean
 
-def recFiles(dir: Path, suffix: String)(using fs: Files[IO]): Stream[IO, Path] =
-  fs.list(dir).flatMap { path =>
-    Stream.eval(fs.isDirectory(path)).ifM(
-      ifTrue  = recFiles(path, suffix),
-      ifFalse = Stream.fromOption{ Option.when(path.toString endsWith suffix)(path) }
-    )
-  }
-
 def escapeXml: Pipe[IO, String, String] = _.map(_.replace("&", "&amp;"))
 
 def mergeNonXmlNewline: Pipe[IO, String, String] =
@@ -86,7 +77,7 @@ def mainIO(inputDir0: String, suffix: String, outputDir0: String, logFile: Strin
     val outputDir = Path(outputDir0)
     val dataS =
       for
-        in <- recFiles(inputDir, suffix)
+        in <- fs.walk(inputDir).filter(_.toString endsWith suffix)
         rel = inputDir.relativize(in)
         out = outputDir.resolve(rel)
         _  <- Stream.eval{ log.info(s"cleaning $rel") }
