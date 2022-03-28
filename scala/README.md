@@ -28,13 +28,13 @@ Clean logic is defined by function `cleanAndFlatten`.
 ---
 #### `find-keywords`
 
-Searches for _keywords_ in the specified files and reports encounters to specified file.
+Searches for _keywords_ in specified dir and reports encounters to specified file.
 
-A _keyword_ is a sequence of capitalized words.
+A _keyword_ is a sequence of capitalized* words.
 
 The logic is defined by function `extractKeywords`.
 
-**[File](./clean-data.sc)**
+**[File](./find-keywords.sc)**
 
 **Main class**: `FindKeywords`
 
