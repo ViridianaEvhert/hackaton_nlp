@@ -13,7 +13,7 @@ import json
 @dataclass
 class ParseChannelVideos:
     channel_id: str = r"UCxEgOKuI-n-WOJaNcisHvSg"
-    key: str = "AIzaSyBGWg9cdTpwwIzs7YiUcDit10lAk9LzW3g"
+    key: str = "YOUr KEY"
 
     def __post_init__(self):
         self.youtube = discovery.build(
