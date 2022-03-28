@@ -28,7 +28,24 @@ Clean logic is defined by function `cleanAndFlatten`.
 ---
 #### `find-keywords`
 
-_WIP_
+Searches for _keywords_ in the specified files and reports encounters to specified file.
+
+A _keyword_ is a sequence of capitalized words.
+
+The logic is defined by function `extractKeywords`.
+
+**[File](./clean-data.sc)**
+
+**Main class**: `FindKeywords`
+
+**Arguments**:
+1. Input data directory (clean data). Will be searched recursively.
+2. Data file suffix.
+3. Output file.
+
+**Hardcoded params**:
+- `maxPar = 4` - process files in parallel
+- `limFreq = 3` - limit output keywords by frequency
 
 ---
 
